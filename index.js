@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const express = require("express");
 require("dotenv").config();
+const listings = require("./aspenData");
 
 const app = express();
 app.use(express.json());
@@ -76,5 +77,20 @@ app.post("/listing", async (request, response) => {
     response.status(500).send(error);
   }
 });
+async function listingLoop() {
+  try {
+    for (let i = 0; i < listings.length; i++) {
+      const listingsArr = await ListingModel.create(listings[i]);
+    }
+    // for (let i = 0; i < listings.length; i++) {
+    //   if (listings[i].description == null) {
+    //     console.log(listings[i]);
+    //   }
+    // }
+  } catch (error) {
+    console.log(error);
+  }
+}
+// listingLoop();
 
 app.listen(4000, () => console.log("app is listening on 4000"));
