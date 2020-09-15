@@ -35,9 +35,26 @@ const listingSchema = new mongoose.Schema({
   fireExtinguisher: { type: String, required: true },
 });
 
+const reservationSchema = new mongoose.Schema({
+  startDate: { type: String, required: true },
+  endDate: { type: String, required: true },
+  reservedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+  },
+  reservedListing: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "listing",
+  },
+});
+
 const ListingModel = mongoose.model("listing", listingSchema);
 
 const UserModel = mongoose.model("user", userSchema);
+
+const ReservationModel = mongoose.model("reservation", reservationSchema);
 
 //create a user
 // get all listings
@@ -77,6 +94,28 @@ app.post("/listing", async (request, response) => {
     response.status(500).send(error);
   }
 });
+
+app.get("/listings", async (request, response) => {
+  try {
+    console.log("get all listings");
+    const listings = await ListingModel.find();
+    response.status(200).send(listings);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+
+app.get("/listingbycity", async (request, response) => {
+  try {
+    console.log("get listing by city");
+    const city = request.query.city;
+    const cityListing = await ListingModel.find({ city });
+    response.status(200).send(cityListing);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+//initial loop used to create 50 listings
 async function listingLoop() {
   try {
     for (let i = 0; i < listings.length; i++) {
@@ -91,6 +130,33 @@ async function listingLoop() {
     console.log(error);
   }
 }
-// listingLoop();
+
+app.post("/reservation", async (request, response) => {
+  try {
+    const startDate = request.body.startDate;
+    const endDate = request.body.endDate;
+    const reservedBy = request.body.reservedBy;
+    const reservedListing = request.body.reservedListing;
+    const createdReservation = await ReservationModel.create({
+      startDate,
+      endDate,
+      reservedBy,
+      reservedListing,
+    });
+    response.status(201).send(createdReservation);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+
+app.delete("/reservation", async (request, response) => {
+  try {
+    const id = request.query.id;
+    const result = await ReservationModel.findByIdAndDelete(id);
+    response.status(200).send(result);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
 
 app.listen(4000, () => console.log("app is listening on 4000"));
