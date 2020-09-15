@@ -159,4 +159,24 @@ app.delete("/reservation", async (request, response) => {
   }
 });
 
+app.post("/authenticateuser", async (request, response) => {
+  try {
+    const username = request.body.username;
+    const password = request.body.password;
+    if (!username || !password) {
+      return response.status(400).send({ message: "invalid credentials" });
+    }
+    const result = await UserModel.find({ username });
+    const userResult = result[0];
+    if (userResult) {
+      if (userResult.password === password) {
+        return response.status(200).send(userResult);
+      } else
+        return response.status(400).send({ message: "incorrect password" });
+    } else return response.status(400).send({ message: "incorrect username" });
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+
 app.listen(4000, () => console.log("app is listening on 4000"));
